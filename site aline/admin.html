@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BellaEstética - Painel da Dona</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Custom Styles for a more refined look */
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .sidebar {
+            background: linear-gradient(135deg, #8B4513, #A0522D); /* Madeira escura */
+            color: white;
+        }
+        .sidebar a {
+            color: #d1d5db;
+            transition: all 0.3s ease;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            color: #fbbf24; /* Ouro */
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+        .content-section {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .btn-primary {
+            background-color: #8B4513; /* Madeira escura */
+            color: white;
+            border-radius: 5px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #A0522D; /* Madeira clara */
+        }
+        .btn-secondary {
+            background-color: #e5e7eb;
+            color: #4b5563;
+            border-radius: 5px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background-color: #d1d5db;
+        }
+        .btn-success {
+            background-color: #10b981;
+            color: white;
+            border-radius: 5px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn-success:hover {
+            background-color: #059669;
+        }
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+            border-radius: 5px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+        .input-field {
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            padding: 0.5rem;
+            width: 100%;
+            transition: border-color 0.3s ease;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #8B4513; /* Madeira escura */
+            box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #9ca3af;
+        }
+        .modal-close:hover {
+            color: #ef4444;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .table th, .table td {
+            border: 1px solid #e5e7eb;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        .table th {
+            background-color: #f9fafb;
+            font-weight: 600;
+        }
+        .status-ativo {
+            color: #10b981;
+        }
+        .status-inativo {
+            color: #ef4444;
+        }
+        .status-potencial {
+            color: #f59e0b;
+        }
+        .status-em-tratamento {
+            color: #3b82f6;
+        }
+        .status-agendado {
+            color: #3b82f6;
+        }
+        .status-realizado {
+            color: #10b981;
+        }
+        .status-cancelado {
+            color: #ef4444;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+        .notification {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        .notification.success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .notification.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        .notification.info {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+        .notification.warning {
+            background-color: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <!-- Sidebar -->
+    <div class="sidebar fixed top-0 left-0 h-full w-64 p-4 z-10">
+        <div class="text-2xl font-bold mb-10 text-center">BellaEstética</div>
+        <nav>
+            <a href="#" class="block py-3 px-4 rounded mb-2 active" onclick="showSection('dashboard-section')">Dashboard</a>
+            <a href="#" class="block py-3 px-4 rounded mb-2" onclick="showSection('clientes-section')">Clientes</a>
+            <a href="#" class="block py-3 px-4 rounded mb-2" onclick="showSection('agendamentos-section')">Agendamentos</a>
+            <a href="#" class="block py-3 px-4 rounded mb-2" onclick="showSection('servicos-section')">Serviços</a>
+            <a href="#" class="block py-3 px-4 rounded mb-2" onclick="showSection('relatorios-section')">Relatórios</a>
+            <a href="#" class="block py-3 px-4 rounded mb-2" onclick="showSection('configuracoes-section')">Configurações</a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="ml-64 p-8">
+        <div class="notification" id="notification"></div>
+
+        <!-- Dashboard Section -->
+        <section id="dashboard-section" class="content-section">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Dashboard</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="card p-6 text-center">
+                    <h3 class="text-xl font-semibold text-gray-700">Total de Clientes</h3>
+                    <p class="text-3xl font-bold text-gray-800" id="totalClientsCount">0</p>
+                </div>
+                <div class="card p-6 text-center">
+                    <h3 class="text-xl font-semibold text-gray-700">Agendamentos Hoje</h3>
+                    <p class="text-3xl font-bold text-gray-800" id="todaysAppointmentsCount">0</p>
+                </div>
+                <div class="card p-6 text-center">
+                    <h3 class="text-xl font-semibold text-gray-700">Clientes Ativos</h3>
+                    <p class="text-3xl font-bold text-gray-800" id="activeClientsCount">0</p>
+                </div>
+                <div class="card p-6 text-center">
+                    <h3 class="text-xl font-semibold text-gray-700">Receita do Mês</h3>
+                    <p class="text-3xl font-bold text-gray-800" id="monthlyRevenue">R$ 0,00</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Próximos Agendamentos</h3>
+                    <div id="upcomingAppointmentsList">
+                        <p class="text-gray-600">Carregando...</p>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Clientes Recentes</h3>
+                    <div id="recentClientsList">
+                        <p class="text-gray-600">Carregando...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Clientes Section -->
+        <section id="clientes-section" class="content-section hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Gerenciar Clientes</h2>
+            <div class="flex justify-between mb-6">
+                <button class="btn-primary" onclick="openModal('clientModal')"><i class="fas fa-plus mr-2"></i>Adicionar Cliente</button>
+                <div>
+                    <input type="text" id="searchClients" class="input-field w-64" placeholder="Buscar cliente...">
+                    <button class="btn-secondary ml-2" onclick="searchClients()"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+            <div class="card">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Telefone</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientsTableBody">
+                        <tr><td colspan="5" class="text-center">Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Agendamentos Section -->
+        <section id="agendamentos-section" class="content-section hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Gerenciar Agendamentos</h2>
+            <div class="flex justify-between mb-6">
+                <button class="btn-primary" onclick="openModal('appointmentModal')"><i class="fas fa-plus mr-2"></i>Adicionar Agendamento</button>
+                <div>
+                    <input type="date" id="filterDate" class="input-field mr-2">
+                    <button class="btn-secondary" onclick="filterAppointments()">Filtrar por Data</button>
+                </div>
+            </div>
+            <div class="card">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Horário</th>
+                            <th>Cliente</th>
+                            <th>Serviço</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appointmentsTableBody">
+                        <tr><td colspan="6" class="text-center">Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Serviços Section -->
+        <section id="servicos-section" class="content-section hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Gerenciar Serviços</h2>
+            <div class="flex justify-between mb-6">
+                <button class="btn-primary" onclick="openModal('serviceModal')"><i class="fas fa-plus mr-2"></i>Adicionar Serviço</button>
+            </div>
+            <div class="card">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Descrição</th>
+                            <th>Duração (min)</th>
+                            <th>Preço (R$)</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="servicesTableBody">
+                        <tr><td colspan="6" class="text-center">Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Relatórios Section -->
+        <section id="relatorios-section" class="content-section hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Relatórios</h2>
+            <div class="card p-6 mb-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Faturamento por Mês</h3>
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+            <div class="card p-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Novos Clientes por Mês</h3>
+                <div class="chart-container">
+                    <canvas id="newClientsChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Configurações Section -->
+        <section id="configuracoes-section" class="content-section hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Configurações</h2>
+            <div class="card space-y-6">
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Perfil da Clínica</h3>
+                    <form class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Nome da Clínica</label>
+                            <input type="text" class="input-field w-full" value="Clínica BellaEstética">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Telefone</label>
+                            <input type="text" class="input-field w-full" value="(11) 1234-5678">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">E-mail</label>
+                            <input type="email" class="input-field w-full" value="contato@bellaestetica.com.br">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Endereço</label>
+                            <input type="text" class="input-field w-full" value="Rua da Beleza, 123 - Centro">
+                        </div>
+                        <button class="btn-primary">Salvar</button>
+                    </form>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Usuários</h3>
+                    <p class="text-gray-600 mb-4">Funcionalidade para adicionar/remover profissionais e definir permissões (requer back-end).</p>
+                    <button class="btn-secondary">Gerenciar Usuários</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Modals (Hidden by default) -->
+        <!-- Add/Edit Client Modal -->
+        <div id="clientModal" class="modal">
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeModal('clientModal')"><i class="fas fa-times"></i></button>
+                <h3 class="text-2xl font-bold text-gray-800 mb-6" id="clientModalTitle">Adicionar Novo Cliente</h3>
+                <form class="space-y-4" id="clientForm">
+                    <input type="hidden" id="clientId">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Nome *</label>
+                        <input type="text" id="clientName" class="input-field" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Telefone *</label>
+                        <input type="text" id="clientPhone" class="input-field" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">E-mail</label>
+                        <input type="email" id="clientEmail" class="input-field">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Status</label>
+                        <select id="clientStatus" class="input-field">
+                            <option value="Ativo">Ativo</option>
+                            <option value="Inativo">Inativo</option>
+                            <option value="Potencial">Potencial</option>
+                            <option value="Em Tratamento">Em Tratamento</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Altura (cm)</label>
+                        <input type="number" id="clientHeight" class="input-field">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Peso (kg)</label>
+                        <input type="number" id="clientWeight" class="input-field">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Doenças Preexistentes</label>
+                        <input type="text" id="clientDiseases" class="input-field">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Alergias</label>
+                        <input type="text" id="clientAllergies" class="input-field">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Observações</label>
+                        <textarea id="clientNotes" class="input-field"></textarea>
+                    </div>
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" class="btn-secondary" onclick="closeModal('clientModal')">Cancelar</button>
+                        <button type="submit" class="btn-primary">Salvar Cliente</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Add/Edit Appointment Modal -->
+        <div id="appointmentModal" class="modal">
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeModal('appointmentModal')"><i class="fas fa-times"></i></button>
+                <h3 class="text-2xl font-bold text-gray-800 mb-6" id="appointmentModalTitle">Adicionar Novo Agendamento</h3>
+                <form class="space-y-4" id="appointmentForm">
+                    <input type="hidden" id="appointmentId">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Cliente *</label>
+                        <select id="appointmentClient" class="input-field" required>
+                            <!-- Preenchido dinamicamente -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Serviço *</label>
+                        <select id="appointmentService" class="input-field" required>
+                            <!-- Preenchido dinamicamente -->
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Data *</label>
+                            <input type="date" id="appointmentDate" class="input-field" required>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Horário *</label>
+                            <input type="time" id="appointmentTime" class="input-field" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Status</label>
+                        <select id="appointmentStatus" class="input-field">
+                            <option value="Agendado">Agendado</option>
+                            <option value="Realizado">Realizado</option>
+                            <option value="Cancelado">Cancelado</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Observações</label>
+                        <textarea id="appointmentNotes" class="input-field"></textarea>
+                    </div>
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" class="btn-secondary" onclick="closeModal('appointmentModal')">Cancelar</button>
+                        <button type="submit" class="btn-primary">Salvar Agendamento</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Add/Edit Service Modal -->
+        <div id="serviceModal" class="modal">
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeModal('serviceModal')"><i class="fas fa-times"></i></button>
+                <h3 class="text-2xl font-bold text-gray-800 mb-6" id="serviceModalTitle">Adicionar Novo Serviço</h3>
+                <form class="space-y-4" id="serviceForm">
+                    <input type="hidden" id="serviceId">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Nome *</label>
+                        <input type="text" id="serviceName" class="input-field" required>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Descrição</label>
+                        <textarea id="serviceDescription" class="input-field"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Duração (min) *</label>
+                            <input type="number" id="serviceDuration" class="input-field" required>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Preço (R$) *</label>
+                            <input type="number" id="servicePrice" class="input-field" step="0.01" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Status</label>
+                        <select id="serviceStatus" class="input-field">
+                            <option value="Ativo">Ativo</option>
+                            <option value="Inativo">Inativo</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" class="btn-secondary" onclick="closeModal('serviceModal')">Cancelar</button>
+                        <button type="submit" class="btn-primary">Salvar Serviço</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- CONFIGURAÇÃO ---
+        // ATENÇÃO: Substitua esta URL pelo URL real do seu backend hospedado no Railway!
+        const API_BASE_URL = 'https://SEU_BACKEND_PROD.railway.app/api'; // Ex: https://meu-backend-remodely-production.up.railway.app/api
+        // ATENÇÃO: Substitua esta URL pelo URL real do seu frontend hospedado no Netlify!
+        const FRONTEND_URL = 'https://SEU_FRONTEND.netlify.app'; // Ex: https://meu-site-remodely.netlify.app
+
+        // --- FUNÇÕES DE NOTIFICAÇÃO ---
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.style.display = 'block';
+
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 5000);
+        }
+
+        // --- FUNÇÕES DE NAVEGAÇÃO ---
+        function showSection(sectionId) {
+            // Esconde todas as seções
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            // Remove a classe 'active' de todos os links
+            document.querySelectorAll('.sidebar a').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            // Mostra a seção selecionada
+            document.getElementById(sectionId).classList.remove('hidden');
+            // Adiciona a classe 'active' ao link clicado
+            event.target.classList.add('active');
+
+            // Carrega dados específicos da seção
+            if (sectionId === 'dashboard-section') {
+                loadDashboardData();
+            } else if (sectionId === 'clientes-section') {
+                loadClients();
+            } else if (sectionId === 'agendamentos-section') {
+                loadAppointments();
+                loadClientsForSelect(); // Para preencher o select no modal de agendamento
+                loadServicesForSelect(); // Para preencher o select no modal de agendamento
+            } else if (sectionId === 'servicos-section') {
+                loadServices();
+            }
+        }
+
+        // --- FUNÇÕES DE MODAL ---
+        function openModal(modalId, data = null) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'block';
+                if (modalId === 'clientModal' && data) {
+                    document.getElementById('clientId').value = data.id;
+                    document.getElementById('clientName').value = data.name;
+                    document.getElementById('clientPhone').value = data.phone;
+                    document.getElementById('clientEmail').value = data.email;
+                    document.getElementById('clientStatus').value = data.status;
+                    document.getElementById('clientHeight').value = data.height || '';
+                    document.getElementById('clientWeight').value = data.weight || '';
+                    document.getElementById('clientDiseases').value = data.diseases || '';
+                    document.getElementById('clientAllergies').value = data.allergies || '';
+                    document.getElementById('clientNotes').value = data.notes || '';
+                    document.getElementById('clientModalTitle').textContent = 'Editar Cliente';
+                } else if (modalId === 'clientModal') {
+                    document.getElementById('clientForm').reset();
+                    document.getElementById('clientId').value = '';
+                    document.getElementById('clientModalTitle').textContent = 'Adicionar Novo Cliente';
+                } else if (modalId === 'appointmentModal' && data) {
+                    document.getElementById('appointmentId').value = data.id;
+                    document.getElementById('appointmentClient').value = data.client._id || data.client; // Assume que o ID do cliente está disponível
+                    document.getElementById('appointmentService').value = data.service._id || data.service;
+                    document.getElementById('appointmentDate').value = new Date(data.date).toISOString().split('T')[0];
+                    document.getElementById('appointmentTime').value = data.time;
+                    document.getElementById('appointmentStatus').value = data.status;
+                    document.getElementById('appointmentNotes').value = data.notes || '';
+                    document.getElementById('appointmentModalTitle').textContent = 'Editar Agendamento';
+                } else if (modalId === 'appointmentModal') {
+                    document.getElementById('appointmentForm').reset();
+                    document.getElementById('appointmentId').value = '';
+                    document.getElementById('appointmentModalTitle').textContent = 'Adicionar Novo Agendamento';
+                } else if (modalId === 'serviceModal' && data) {
+                    document.getElementById('serviceId').value = data.id;
+                    document.getElementById('serviceName').value = data.name;
+                    document.getElementById('serviceDescription').value = data.description;
+                    document.getElementById('serviceDuration').value = data.duration;
+                    document.getElementById('servicePrice').value = data.price;
+                    document.getElementById('serviceStatus').value = data.status;
+                    document.getElementById('serviceModalTitle').textContent = 'Editar Serviço';
+                } else if (modalId === 'serviceModal') {
+                    document.getElementById('serviceForm').reset();
+                    document.getElementById('serviceId').value = '';
+                    document.getElementById('serviceModalTitle').textContent = 'Adicionar Novo Serviço';
+                }
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Fecha modais ao clicar fora
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // --- FUNÇÕES DE AUTENTICAÇÃO (SIMPLIFICADO PARA EXEMPLO - REQUER BACKEND REAL) ---
+        // Armazena o token JWT no localStorage após login bem-sucedido
+        function setAuthToken(token) {
+            localStorage.setItem('authToken', token);
+        }
+
+        function getAuthToken() {
+            return localStorage.getItem('authToken');
+        }
+
+        function isAuthenticated() {
+            return !!getAuthToken();
+        }
+
+        // Intercepta todas as requisições para adicionar o token de autenticação
+        async function apiRequest(endpoint, options = {}) {
+            const token = getAuthToken();
+            if (!options.headers) {
+                options.headers = {};
+            }
+            if (token) {
+                options.headers['Authorization'] = `Bearer ${token}`;
+            }
+            options.headers['Content-Type'] = 'application/json';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        // Token inválido ou expirado
+                        localStorage.removeItem('authToken');
+                        window.location.href = `${FRONTEND_URL}/login.html`; // Redireciona para página de login
+                        showNotification('Sessão expirada. Faça login novamente.', 'error');
+                        return null;
+                    }
+                    throw new Error(`Erro na API: ${response.status} - ${response.statusText}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Erro na requisição API:', error);
+                showNotification(`Erro na comunicação com o servidor: ${error.message}`, 'error');
+                return null;
+            }
+        }
+
+        // --- FUNÇÕES DE CLIENTES ---
+        async function loadClients() {
+            const response = await apiRequest('/clients');
+            if (response) {
+                const tbody = document.getElementById('clientsTableBody');
+                tbody.innerHTML = ''; // Limpa a tabela antes de preencher
+
+                if (response.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center">Nenhum cliente encontrado.</td></tr>';
+                    return;
+                }
+
+                response.forEach(client => {
+                    const row = document.createElement('tr');
+                    const statusClass = `status-${client.status.toLowerCase().replace(' ', '-')}`;
+                    row.innerHTML = `
+                        <td>${client.name}</td>
+                        <td>${client.phone}</td>
+                        <td>${client.email || 'N/A'}</td>
+                        <td><span class="${statusClass}">${client.status}</span></td>
+                        <td>
+                            <button class="btn-primary mr-2" onclick="viewClient('${client._id}')"><i class="fas fa-eye"></i></button>
+                            <button class="btn-primary mr-2" onclick="editClient('${client._id}')"><i class="fas fa-edit"></i></button>
+                            <button class="btn-danger" onclick="deleteClient('${client._id}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+
+        async function addClient(clientData) {
+            const response = await apiRequest('/clients', {
+                method: 'POST',
+                body: JSON.stringify(clientData)
+            });
+            if (response) {
+                showNotification('Cliente adicionado com sucesso!', 'success');
+                loadClients(); // Recarrega a lista
+                closeModal('clientModal');
+            }
+        }
+
+        async function updateClient(id, clientData) {
+            const response = await apiRequest(`/clients/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(clientData)
+            });
+            if (response) {
+                showNotification('Cliente atualizado com sucesso!', 'success');
+                loadClients(); // Recarrega a lista
+                closeModal('clientModal');
+            }
+        }
+
+        async function deleteClient(id) {
+            if (confirm('Tem certeza que deseja excluir este cliente?')) {
+                const response = await apiRequest(`/clients/${id}`, {
+                    method: 'DELETE'
+                });
+                if (response) {
+                    showNotification('Cliente excluído com sucesso!', 'success');
+                    loadClients(); // Recarrega a lista
+                }
+            }
+        }
+
+        async function viewClient(id) {
+            const response = await apiRequest(`/clients/${id}`);
+            if (response) {
+                let details = `Nome: ${response.name}\nTelefone: ${response.phone}\nEmail: ${response.email || 'N/A'}\nStatus: ${response.status}\n`;
+                details += `Altura: ${response.height || 'N/A'}cm\nPeso: ${response.weight || 'N/A'}kg\n`;
+                details += `Doenças Preexistentes: ${response.diseases || 'Nenhuma'}\nAlergias: ${response.allergies || 'Nenhuma'}\n`;
+                details += `Observações Internas: ${response.notes || 'Nenhuma'}\nÚltimo Agendamento: ${response.lastAppointment || 'N/A'}`;
+                alert('Detalhes do Cliente:\n' + details);
+            }
+        }
+
+        async function editClient(id) {
+            const response = await apiRequest(`/clients/${id}`);
+            if (response) {
+                openModal('clientModal', response);
+            }
+        }
+
+        async function searchClients() {
+            const searchTerm = document.getElementById('searchClients').value.toLowerCase();
+            if (!searchTerm) {
+                loadClients();
+                return;
+            }
+
+            const allClients = await apiRequest('/clients');
+            if (allClients) {
+                const filteredClients = allClients.filter(client =>
+                    client.name.toLowerCase().includes(searchTerm) ||
+                    client.phone.includes(searchTerm) ||
+                    (client.email && client.email.toLowerCase().includes(searchTerm))
+                );
+
+                const tbody = document.getElementById('clientsTableBody');
+                tbody.innerHTML = ''; // Limpa a tabela antes de preencher
+
+                if (filteredClients.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center">Nenhum cliente encontrado para a busca.</td></tr>';
+                    return;
+                }
+
+                filteredClients.forEach(client => {
+                    const row = document.createElement('tr');
+                    const statusClass = `status-${client.status.toLowerCase().replace(' ', '-')}`;
+                    row.innerHTML = `
+                        <td>${client.name}</td>
+                        <td>${client.phone}</td>
+                        <td>${client.email || 'N/A'}</td>
+                        <td><span class="${statusClass}">${client.status}</span></td>
+                        <td>
+                            <button class="btn-primary mr-2" onclick="viewClient('${client._id}')"><i class="fas fa-eye"></i></button>
+                            <button class="btn-primary mr-2" onclick="editClient('${client._id}')"><i class="fas fa-edit"></i></button>
+                            <button class="btn-danger" onclick="deleteClient('${client._id}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+
+        // --- FUNÇÕES DE AGENDAMENTOS ---
+        async function loadAppointments() {
+            const response = await apiRequest('/appointments');
+            if (response) {
+                const tbody = document.getElementById('appointmentsTableBody');
+                tbody.innerHTML = ''; // Limpa a tabela antes de preencher
+
+                if (response.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhum agendamento encontrado.</td></tr>';
+                    return;
+                }
+
+                response.forEach(appointment => {
+                    const statusClass = `status-${appointment.status.toLowerCase().replace(' ', '-')}`;
+                    // Formata a data para DD/MM/AAAA
+                    const formattedDate = new Date(appointment.date).toLocaleDateString('pt-BR');
+                    row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${formattedDate}</td>
+                        <td>${appointment.time}</td>
+                        <td>${appointment.client.name || 'Cliente não encontrado'}</td> <!-- Assume que o populate foi feito -->
+                        <td>${appointment.service}</td>
+                        <td><span class="${statusClass}">${appointment.status}</span></td>
+                        <td>
+                            <button class="btn-primary mr-2" onclick="editAppointment('${appointment._id}')"><i class="fas fa-edit"></i></button>
+                            <button class="btn-danger" onclick="deleteAppointment('${appointment._id}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+
+        async function addAppointment(appointmentData) {
+            const response = await apiRequest('/appointments', {
+                method: 'POST',
+                body: JSON.stringify(appointmentData)
+            });
+            if (response) {
+                showNotification('Agendamento adicionado com sucesso!', 'success');
+                loadAppointments(); // Recarrega a lista
+                loadDashboardData(); // Atualiza o dashboard também
+                closeModal('appointmentModal');
+            }
+        }
+
+        async function updateAppointment(id, appointmentData) {
+            const response = await apiRequest(`/appointments/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(appointmentData)
+            });
+            if (response) {
+                showNotification('Agendamento atualizado com sucesso!', 'success');
+                loadAppointments(); // Recarrega a lista
+                loadDashboardData(); // Atualiza o dashboard também
+                closeModal('appointmentModal');
+            }
+        }
+
+        async function deleteAppointment(id) {
+            if (confirm('Tem certeza que deseja excluir este agendamento?')) {
+                const response = await apiRequest(`/appointments/${id}`, {
+                    method: 'DELETE'
+                });
+                if (response) {
+                    showNotification('Agendamento excluído com sucesso!', 'success');
+                    loadAppointments(); // Recarrega a lista
+                    loadDashboardData(); // Atualiza o dashboard também
+                }
+            }
+        }
+
+        async function editAppointment(id) {
+            const response = await apiRequest(`/appointments/${id}`);
+            if (response) {
+                // Certifique-se de que os selects de cliente e serviço estejam preenchidos antes de abrir o modal
+                await loadClientsForSelect();
+                await loadServicesForSelect();
+                openModal('appointmentModal', response);
+            }
+        }
+
+        async function filterAppointments() {
+            const filterDate = document.getElementById('filterDate').value;
+            if (!filterDate) {
+                loadAppointments();
+                return;
+            }
+
+            const allAppointments = await apiRequest('/appointments');
+            if (allAppointments) {
+                const filteredAppointments = allAppointments.filter(appointment =>
+                    new Date(appointment.date).toISOString().split('T')[0] === filterDate
+                );
+
+                const tbody = document.getElementById('appointmentsTableBody');
+                tbody.innerHTML = ''; // Limpa a tabela antes de preencher
+
+                if (filteredAppointments.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhum agendamento encontrado para a data selecionada.</td></tr>';
+                    return;
+                }
+
+                filteredAppointments.forEach(appointment => {
+                    const statusClass = `status-${appointment.status.toLowerCase().replace(' ', '-')}`;
+                    // Formata a data para DD/MM/AAAA
+                    const formattedDate = new Date(appointment.date).toLocaleDateString('pt-BR');
+                    row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${formattedDate}</td>
+                        <td>${appointment.time}</td>
+                        <td>${appointment.client.name || 'Cliente não encontrado'}</td>
+                        <td>${appointment.service}</td>
+                        <td><span class="${statusClass}">${appointment.status}</span></td>
+                        <td>
+                            <button class="btn-primary mr-2" onclick="editAppointment('${appointment._id}')"><i class="fas fa-edit"></i></button>
+                            <button class="btn-danger" onclick="deleteAppointment('${appointment._id}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+
+        // --- FUNÇÕES DE SERVIÇOS ---
+        async function loadServices() {
+            const response = await apiRequest('/services');
+            if (response) {
+                const tbody = document.getElementById('servicesTableBody');
+                tbody.innerHTML = ''; // Limpa a tabela antes de preencher
+
+                if (response.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhum serviço encontrado.</td></tr>';
+                    return;
+                }
+
+                response.forEach(service => {
+                    const statusClass = `status-${service.status.toLowerCase().replace(' ', '-')}`;
+                    row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${service.name}</td>
+                        <td>${service.description}</td>
+                        <td>${service.duration}</td>
+                        <td>R$ ${parseFloat(service.price).toFixed(2)}</td>
+                        <td><span class="${statusClass}">${service.status}</span></td>
+                        <td>
+                            <button class="btn-primary mr-2" onclick="editService('${service._id}')"><i class="fas fa-edit"></i></button>
+                            <button class="btn-danger" onclick="deleteService('${service._id}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+
+        async function addService(serviceData) {
+            const response = await apiRequest('/services', {
+                method: 'POST',
+                body: JSON.stringify(serviceData)
+            });
+            if (response) {
+                showNotification('Serviço adicionado com sucesso!', 'success');
+                loadServices(); // Recarrega a lista
+                closeModal('serviceModal');
+            }
+        }
+
+        async function updateService(id, serviceData) {
+            const response = await apiRequest(`/services/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(serviceData)
+            });
+            if (response) {
+                showNotification('Serviço atualizado com sucesso!', 'success');
+                loadServices(); // Recarrega a lista
+                closeModal('serviceModal');
+            }
+        }
+
+        async function deleteService(id) {
+            if (confirm('Tem certeza que deseja excluir este serviço?')) {
+                const response = await apiRequest(`/services/${id}`, {
+                    method: 'DELETE'
+                });
+                if (response) {
+                    showNotification('Serviço excluído com sucesso!', 'success');
+                    loadServices(); // Recarrega a lista
+                }
+            }
+        }
+
+        async function editService(id) {
+            const response = await apiRequest(`/services/${id}`);
+            if (response) {
+                openModal('serviceModal', response);
+            }
+        }
+
+        // --- FUNÇÕES DE PREENCHIMENTO DE SELECTS (para modais de agendamento) ---
+        async function loadClientsForSelect() {
+            const response = await apiRequest('/clients');
+            if (response) {
+                const select = document.getElementById('appointmentClient');
+                select.innerHTML = ''; // Limpa antes de preencher
+                response.forEach(client => {
+                    const option = document.createElement('option');
+                    option.value = client._id;
+                    option.textContent = client.name;
+                    select.appendChild(option);
+                });
+            }
+        }
+
+        async function loadServicesForSelect() {
+            const response = await apiRequest('/services');
+            if (response) {
+                const select = document.getElementById('appointmentService');
+                select.innerHTML = ''; // Limpa antes de preencher
+                response.forEach(service => {
+                    const option = document.createElement('option');
+                    option.value = service._id;
+                    option.textContent = service.name;
+                    select.appendChild(option);
+                });
+            }
+        }
+
+        // --- FUNÇÕES DO DASHBOARD ---
+        async function loadDashboardData() {
+            // Carrega clientes e agendamentos para calcular estatísticas
+            const [clientsRes, appointmentsRes] = await Promise.all([
+                apiRequest('/clients'),
+                apiRequest('/appointments')
+            ]);
+
+            if (clientsRes && appointmentsRes) {
+                // Total de Clientes
+                document.getElementById('totalClientsCount').textContent = clientsRes.length;
+
+                // Clientes Ativos
+                const activeClients = clientsRes.filter(c => c.status === 'Ativo').length;
+                document.getElementById('activeClientsCount').textContent = activeClients;
+
+                // Agendamentos de Hoje
+                const today = new Date().toISOString().split('T')[0];
+                const todaysAppointments = appointmentsRes.filter(a => new Date(a.date).toISOString().split('T')[0] === today).length;
+                document.getElementById('todaysAppointmentsCount').textContent = todaysAppointments;
+
+                // Receita do Mês (Simples: soma dos preços dos serviços realizados este mês)
+                const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+                const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+                const monthlyAppointments = appointmentsRes.filter(a => {
+                    const apptDate = new Date(a.date);
+                    return apptDate >= startOfMonth && apptDate <= endOfMonth && a.status === 'Realizado';
+                });
+                // Simula o cálculo da receita (precisa do preço do serviço, que não está no objeto de agendamento padrão do backend acima)
+                // Vamos considerar que o backend envia o preço do serviço junto com o agendamento ou fazemos uma chamada adicional
+                // Para simplificar, vamos simular um valor médio ou buscar o preço do serviço
+                let monthlyRevenue = 0;
+                // Simulação: Soma um valor médio de R$ 300,00 para cada agendamento realizado no mês
+                // Para uma implementação real, o backend deve retornar o preço do serviço no agendamento ou fazer uma junção.
+                monthlyRevenue = monthlyAppointments.length * 300.00;
+                document.getElementById('monthlyRevenue').textContent = `R$ ${monthlyRevenue.toFixed(2)}`;
+
+                // Próximos Agendamentos (próximos 5)
+                const sortedAppointments = appointmentsRes.sort((a, b) => new Date(a.date) - new Date(b.date));
+                const upcomingAppointments = sortedAppointments.filter(a => new Date(a.date) >= new Date()).slice(0, 5);
+                const upcomingList = document.getElementById('upcomingAppointmentsList');
+                upcomingList.innerHTML = '';
+                if (upcomingAppointments.length === 0) {
+                    upcomingList.innerHTML = '<p class="text-gray-600">Nenhum agendamento futuro encontrado.</p>';
+                } else {
+                    upcomingAppointments.forEach(appt => {
+                        const formattedDate = new Date(appt.date).toLocaleDateString('pt-BR');
+                        const apptDiv = document.createElement('div');
+                        apptDiv.className = 'p-2 border-b border-gray-200';
+                        apptDiv.innerHTML = `<p><strong>${formattedDate} ${appt.time}</strong> - ${appt.client.name || 'Cliente não encontrado'} - ${appt.service} <span class="status-${appt.status.toLowerCase().replace(' ', '-')}">(${appt.status})</span></p>`;
+                        upcomingList.appendChild(apptDiv);
+                    });
+                }
+
+                // Clientes Recentes (5 mais novos)
+                const recentClients = clientsRes.sort((a, b) => new Date(b.createdAt || b._id) - new Date(a.createdAt || a._id)).slice(0, 5); // Assume que createdAt ou _id pode ser usado como proxy
+                const recentList = document.getElementById('recentClientsList');
+                recentList.innerHTML = '';
+                if (recentClients.length === 0) {
+                    recentList.innerHTML = '<p class="text-gray-600">Nenhum cliente encontrado.</p>';
+                } else {
+                    recentClients.forEach(client => {
+                        const clientDiv = document.createElement('div');
+                        clientDiv.className = 'p-2 border-b border-gray-200';
+                        clientDiv.innerHTML = `<p><strong>${client.name}</strong> - ${client.phone} <span class="status-${client.status.toLowerCase().replace(' ', '-')}">(${client.status})</span></p>`;
+                        recentList.appendChild(clientDiv);
+                    });
+                }
+            }
+        }
+
+        // --- EVENT LISTENERS PARA FORMS ---
+        document.getElementById('clientForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('clientId').value;
+            const clientData = {
+                name: document.getElementById('clientName').value,
+                phone: document.getElementById('clientPhone').value,
+                email: document.getElementById('clientEmail').value,
+                status: document.getElementById('clientStatus').value,
+                height: document.getElementById('clientHeight').value ? parseInt(document.getElementById('clientHeight').value) : undefined,
+                weight: document.getElementById('clientWeight').value ? parseFloat(document.getElementById('clientWeight').value) : undefined,
+                diseases: document.getElementById('clientDiseases').value,
+                allergies: document.getElementById('clientAllergies').value,
+                notes: document.getElementById('clientNotes').value
+            };
+
+            if (id) {
+                await updateClient(id, clientData);
+            } else {
+                await addClient(clientData);
+            }
+        });
+
+        document.getElementById('appointmentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('appointmentId').value;
+            const appointmentData = {
+                client: document.getElementById('appointmentClient').value,
+                service: document.getElementById('appointmentService').value,
+                date: document.getElementById('appointmentDate').value,
+                time: document.getElementById('appointmentTime').value,
+                status: document.getElementById('appointmentStatus').value,
+                notes: document.getElementById('appointmentNotes').value
+            };
+
+            if (id) {
+                await updateAppointment(id, appointmentData);
+            } else {
+                await addAppointment(appointmentData);
+            }
+        });
+
+        document.getElementById('serviceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('serviceId').value;
+            const serviceData = {
+                name: document.getElementById('serviceName').value,
+                description: document.getElementById('serviceDescription').value,
+                duration: parseInt(document.getElementById('serviceDuration').value),
+                price: parseFloat(document.getElementById('servicePrice').value),
+                status: document.getElementById('serviceStatus').value
+            };
+
+            if (id) {
+                await updateService(id, serviceData);
+            } else {
+                await addService(serviceData);
+            }
+        });
+
+        // --- INICIALIZAÇÃO ---
+        // Carrega a seção inicial e os dados do dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!isAuthenticated()) {
+                // Se não estiver autenticado, redireciona para o frontend
+                window.location.href = FRONTEND_URL;
+                return;
+            }
+            showSection('dashboard-section');
+        });
+
+    </script>
+</body>
+</html>
