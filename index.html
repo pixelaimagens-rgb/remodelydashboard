@@ -107,24 +107,24 @@
             <i data-lucide="spa" class="mr-2"></i> Remodely
         </div>
         <nav>
-            <a href="#" class="active flex items-center" onclick="showSection('dashboard-section')">
-                <i data-lucide="layout-dashboard" class="mr-2"></i> Dashboard
-            </a>
-            <a href="#" class="flex items-center" onclick="showSection('clientes-section')">
-                <i data-lucide="users" class="mr-2"></i> Clientes
-            </a>
-            <a href="#" class="flex items-center" onclick="showSection('agendamentos-section')">
-                <i data-lucide="calendar" class="mr-2"></i> Agendamentos
-            </a>
-            <a href="#" class="flex items-center" onclick="showSection('servicos-section')">
-                <i data-lucide="scissors" class="mr-2"></i> Serviços
-            </a>
-            <a href="#" class="flex items-center" onclick="showSection('relatorios-section')">
-                <i data-lucide="bar-chart-3" class="mr-2"></i> Relatórios
-            </a>
-            <a href="#" class="flex items-center" onclick="showSection('configuracoes-section')">
-                <i data-lucide="settings" class="mr-2"></i> Configurações
-            </a>
+           <a href="#" class="active flex items-center" onclick="showSection('dashboard-section', event)">
+    <i data-lucide="layout-dashboard" class="mr-2"></i> Dashboard
+</a>
+<a href="#" class="flex items-center" onclick="showSection('clientes-section', event)">
+    <i data-lucide="users" class="mr-2"></i> Clientes
+</a>
+<a href="#" class="flex items-center" onclick="showSection('agendamentos-section', event)">
+    <i data-lucide="calendar" class="mr-2"></i> Agendamentos
+</a>
+<a href="#" class="flex items-center" onclick="showSection('servicos-section', event)">
+    <i data-lucide="scissors" class="mr-2"></i> Serviços
+</a>
+<a href="#" class="flex items-center" onclick="showSection('relatorios-section', event)">
+    <i data-lucide="bar-chart-3" class="mr-2"></i> Relatórios
+</a>
+<a href="#" class="flex items-center" onclick="showSection('configuracoes-section', event)">
+    <i data-lucide="settings" class="mr-2"></i> Configurações
+</a>
         </nav>
     </div>
     <!-- Main Content -->
@@ -1120,3 +1120,4 @@ Alergias: ${response.allergies || 'Nenhuma'}
     </script>
 </body>
 </html>
+
