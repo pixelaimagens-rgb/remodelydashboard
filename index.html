@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Lucide Icons via CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style type="text/tailwindcss">
         @layer base {
             body {
@@ -97,6 +99,9 @@
             .notification.warning {
                 @apply bg-yellow-600 text-white;
             }
+            .chart-container {
+                @apply h-64 w-full;
+            }
         }
     </style>
 </head>
@@ -107,29 +112,30 @@
             <i data-lucide="spa" class="mr-2"></i> Remodely
         </div>
         <nav>
-           <a href="#" class="active flex items-center" onclick="showSection('dashboard-section', event)">
-    <i data-lucide="layout-dashboard" class="mr-2"></i> Dashboard
-</a>
-<a href="#" class="flex items-center" onclick="showSection('clientes-section', event)">
-    <i data-lucide="users" class="mr-2"></i> Clientes
-</a>
-<a href="#" class="flex items-center" onclick="showSection('agendamentos-section', event)">
-    <i data-lucide="calendar" class="mr-2"></i> Agendamentos
-</a>
-<a href="#" class="flex items-center" onclick="showSection('servicos-section', event)">
-    <i data-lucide="scissors" class="mr-2"></i> Serviços
-</a>
-<a href="#" class="flex items-center" onclick="showSection('relatorios-section', event)">
-    <i data-lucide="bar-chart-3" class="mr-2"></i> Relatórios
-</a>
-<a href="#" class="flex items-center" onclick="showSection('configuracoes-section', event)">
-    <i data-lucide="settings" class="mr-2"></i> Configurações
-</a>
+            <a href="#" class="active flex items-center" onclick="showSection('dashboard-section', event)">
+                <i data-lucide="layout-dashboard" class="mr-2"></i> Dashboard
+            </a>
+            <a href="#" class="flex items-center" onclick="showSection('clientes-section', event)">
+                <i data-lucide="users" class="mr-2"></i> Clientes
+            </a>
+            <a href="#" class="flex items-center" onclick="showSection('agendamentos-section', event)">
+                <i data-lucide="calendar" class="mr-2"></i> Agendamentos
+            </a>
+            <a href="#" class="flex items-center" onclick="showSection('servicos-section', event)">
+                <i data-lucide="scissors" class="mr-2"></i> Serviços
+            </a>
+            <a href="#" class="flex items-center" onclick="showSection('relatorios-section', event)">
+                <i data-lucide="bar-chart-3" class="mr-2"></i> Relatórios
+            </a>
+            <a href="#" class="flex items-center" onclick="showSection('configuracoes-section', event)">
+                <i data-lucide="settings" class="mr-2"></i> Configurações
+            </a>
         </nav>
     </div>
     <!-- Main Content -->
     <div class="ml-64 p-6">
         <div class="notification" id="notification"></div>
+
         <!-- Dashboard Section -->
         <section id="dashboard-section" class="content-section">
             <h2 class="text-2xl font-bold text-gray-100 mb-6 flex items-center">
@@ -184,6 +190,7 @@
                 </div>
             </div>
         </section>
+
         <!-- Clientes Section -->
         <section id="clientes-section" class="content-section hidden">
             <h2 class="text-2xl font-bold text-gray-100 mb-6 flex items-center">
@@ -219,6 +226,7 @@
                 </div>
             </div>
         </section>
+
         <!-- Agendamentos Section -->
         <section id="agendamentos-section" class="content-section hidden">
             <h2 class="text-2xl font-bold text-gray-100 mb-6 flex items-center">
@@ -253,6 +261,7 @@
                 </div>
             </div>
         </section>
+
         <!-- Serviços Section -->
         <section id="servicos-section" class="content-section hidden">
             <h2 class="text-2xl font-bold text-gray-100 mb-6 flex items-center">
@@ -283,24 +292,74 @@
                 </div>
             </div>
         </section>
+
         <!-- Relatórios Section -->
         <section id="relatorios-section" class="content-section hidden">
             <h2 class="text-2xl font-bold text-gray-100 mb-6 flex items-center">
-                <i data-lucide="bar-chart-3" class="mr-2 text-yellow-400"></i> Relatórios
+                <i data-lucide="bar-chart-3" class="mr-2 text-yellow-400"></i> Relatórios Avançados
             </h2>
-            <div class="card p-6 mb-6">
-                <h3 class="text-xl font-semibold text-gray-100 mb-4">Faturamento por Mês</h3>
-                <div class="chart-container">
-                    <canvas id="revenueChart"></canvas>
+            
+            <!-- Filtros -->
+            <div class="flex flex-wrap gap-4 mb-6">
+                <div>
+                    <label class="block text-gray-300 text-sm font-medium mb-2">Período</label>
+                    <select id="reportPeriod" class="input-field">
+                        <option value="daily">Diário</option>
+                        <option value="weekly">Semanal</option>
+                        <option value="monthly" selected>Mensal</option>
+                    </select>
+                </div>
+                <div id="dateFilter" class="hidden">
+                    <label class="block text-gray-300 text-sm font-medium mb-2">Data</label>
+                    <input type="date" id="reportDate" class="input-field" value="">
+                </div>
+                <div id="monthFilter">
+                    <label class="block text-gray-300 text-sm font-medium mb-2">Mês/Ano</label>
+                    <input type="month" id="reportMonth" class="input-field" value="">
+                </div>
+                <button class="btn-primary mt-6" onclick="loadReports()">Carregar Relatório</button>
+                <button class="btn-secondary mt-6" onclick="exportReportToCSV()">Exportar CSV</button>
+            </div>
+
+            <!-- Cards de Resumo -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="card bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+                    <h3 class="text-lg font-semibold">Agendamentos Realizados</h3>
+                    <p class="text-3xl font-bold mt-2" id="reportAppointments">0</p>
+                </div>
+                <div class="card bg-gradient-to-r from-green-600 to-emerald-700 text-white">
+                    <h3 class="text-lg font-semibold">Receita</h3>
+                    <p class="text-3xl font-bold mt-2" id="reportRevenue">R$ 0,00</p>
+                </div>
+                <div class="card bg-gradient-to-r from-purple-600 to-fuchsia-700 text-white">
+                    <h3 class="text-lg font-semibold">Novos Clientes</h3>
+                    <p class="text-3xl font-bold mt-2" id="reportNewClients">0</p>
                 </div>
             </div>
-            <div class="card p-6">
-                <h3 class="text-xl font-semibold text-gray-100 mb-4">Novos Clientes por Mês</h3>
-                <div class="chart-container">
-                    <canvas id="newClientsChart"></canvas>
+
+            <!-- Gráficos -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div class="card">
+                    <h3 class="text-xl font-semibold text-gray-100 mb-4">Receita por Mês</h3>
+                    <div class="chart-container">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
                 </div>
+                <div class="card">
+                    <h3 class="text-xl font-semibold text-gray-100 mb-4">Novos Clientes por Mês</h3>
+                    <div class="chart-container">
+                        <canvas id="newClientsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detalhes -->
+            <div class="card">
+                <h3 class="text-xl font-semibold text-gray-100 mb-4">Detalhes do Período</h3>
+                <div id="reportDetails">Selecione um período para visualizar os dados.</div>
             </div>
         </section>
+
         <!-- Configurações Section -->
         <section id="configuracoes-section" class="content-section hidden">
             <h2 class="text-2xl font-bold text-gray-100 mb-6 flex items-center">
@@ -336,6 +395,7 @@
                 </div>
             </div>
         </section>
+
         <!-- Modals -->
         <div id="clientModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
             <div class="bg-gray-800 rounded-xl p-6 w-11/12 max-w-2xl">
@@ -401,6 +461,7 @@
                 </form>
             </div>
         </div>
+
         <div id="appointmentModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
             <div class="bg-gray-800 rounded-xl p-6 w-11/12 max-w-2xl">
                 <div class="flex justify-between items-center mb-4">
@@ -415,13 +476,11 @@
                         <div>
                             <label class="block text-gray-300 text-sm font-medium mb-2">Cliente *</label>
                             <select id="appointmentClient" class="input-field" required>
-                                <!-- Preenchido dinamicamente -->
                             </select>
                         </div>
                         <div>
                             <label class="block text-gray-300 text-sm font-medium mb-2">Serviço *</label>
                             <select id="appointmentService" class="input-field" required>
-                                <!-- Preenchido dinamicamente -->
                             </select>
                         </div>
                     </div>
@@ -454,6 +513,7 @@
                 </form>
             </div>
         </div>
+
         <div id="serviceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
             <div class="bg-gray-800 rounded-xl p-6 w-11/12 max-w-2xl">
                 <div class="flex justify-between items-center mb-4">
@@ -499,15 +559,12 @@
     </div>
 
     <script>
-        // --- CONFIGURAÇÃO ---
-        // *********** IMPORTANTE: Substitua esta URL pelo URL real do seu backend hospedado no Railway! ***********
-        const API_BASE_URL = 'https://remodely-production.up.railway.app/api/';
-        // Exemplo: const API_BASE_URL = 'https://remodely-abc123-production.up.railway.app/api';
-        // *********** IMPORTANTE: Substitua esta URL pelo URL real do seu frontend hospedado no Netlify! ***********
-        const FRONTEND_URL = 'https://remodelyadm.netlify.app/';
-        // Exemplo: const FRONTEND_URL = 'https://remodelyadm.netlify.app/';
+        // --- CONFIGURAÇÃO PARA PRODUÇÃO ---
+        // ⚠️ SUBSTITUA ESTES VALORES PELOS SEUS LINKS REAIS DO RENDER E NETLIFY
+        const API_BASE_URL = 'https://SEU-BACKEND.onrender.com/api/';
+        const FRONTEND_URL = 'https://SEU-FRONTEND.netlify.app/';
 
-        // Inicializa os ícones Lucide
+        // Inicializa ícones
         lucide.createIcons();
 
         // --- FUNÇÕES DE NOTIFICAÇÃO ---
@@ -516,41 +573,31 @@
             notification.textContent = message;
             notification.className = `notification ${type}`;
             notification.classList.add('show');
-
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 5000);
+            setTimeout(() => notification.classList.remove('show'), 5000);
         }
 
         // --- FUNÇÕES DE NAVEGAÇÃO ---
         function showSection(sectionId, evt = null) {
-    // Esconde todas as seções
-    document.querySelectorAll('.content-section').forEach(section => {
-        section.classList.add('hidden');
-    });
-    // Remove a classe 'active' de todos os links
-    document.querySelectorAll('.sidebar a').forEach(link => {
-        link.classList.remove('active');
-    });
-    // Mostra a seção selecionada
-    document.getElementById(sectionId).classList.remove('hidden');
-    // Adiciona a classe 'active' ao link clicado, se o evento for fornecido
-    if (evt && evt.target) {
-        evt.target.classList.add('active');
-    }
-    // Carrega dados específicos da seção
-    if (sectionId === 'dashboard-section') {
-        loadDashboardData();
-    } else if (sectionId === 'clientes-section') {
-        loadClients();
-    } else if (sectionId === 'agendamentos-section') {
-        loadAppointments();
-        loadClientsForSelect();
-        loadServicesForSelect();
-    } else if (sectionId === 'servicos-section') {
-        loadServices();
-    }
-}
+            document.querySelectorAll('.content-section').forEach(section => section.classList.add('hidden'));
+            document.querySelectorAll('.sidebar a').forEach(link => link.classList.remove('active'));
+            document.getElementById(sectionId).classList.remove('hidden');
+            if (evt && evt.target) evt.target.classList.add('active');
+
+            if (sectionId === 'dashboard-section') {
+                loadDashboardData();
+            } else if (sectionId === 'clientes-section') {
+                loadClients();
+            } else if (sectionId === 'agendamentos-section') {
+                loadAppointments();
+                loadClientsForSelect();
+                loadServicesForSelect();
+            } else if (sectionId === 'servicos-section') {
+                loadServices();
+            } else if (sectionId === 'relatorios-section') {
+                loadReports();
+                loadCharts();
+            }
+        }
 
         // --- FUNÇÕES DE MODAL ---
         function openModal(modalId, data = null) {
@@ -560,7 +607,7 @@
                 document.getElementById('clientId').value = data._id;
                 document.getElementById('clientName').value = data.name;
                 document.getElementById('clientPhone').value = data.phone;
-                document.getElementById('clientEmail').value = data.email;
+                document.getElementById('clientEmail').value = data.email || '';
                 document.getElementById('clientStatus').value = data.status;
                 document.getElementById('clientHeight').value = data.height || '';
                 document.getElementById('clientWeight').value = data.weight || '';
@@ -588,7 +635,7 @@
             } else if (modalId === 'serviceModal' && data) {
                 document.getElementById('serviceId').value = data._id;
                 document.getElementById('serviceName').value = data.name;
-                document.getElementById('serviceDescription').value = data.description;
+                document.getElementById('serviceDescription').value = data.description || '';
                 document.getElementById('serviceDuration').value = data.duration;
                 document.getElementById('servicePrice').value = data.price;
                 document.getElementById('serviceStatus').value = data.status;
@@ -604,41 +651,16 @@
             document.getElementById(modalId).classList.add('hidden');
         }
 
-        // --- FUNÇÕES DE AUTENTICAÇÃO ---
-        function setAuthToken(token) {
-            localStorage.setItem('authToken', token);
-        }
-        function getAuthToken() {
-            return localStorage.getItem('authToken');
-        }
-        function isAuthenticated() {
-            return !!getAuthToken();
-        }
-
+        // --- FUNÇÕES DE API (SEM AUTENTICAÇÃO) ---
         async function apiRequest(endpoint, options = {}) {
-            const token = getAuthToken();
-            if (!options.headers) {
-                options.headers = {};
-            }
-            if (token) {
-                options.headers['Authorization'] = `Bearer ${token}`;
-            }
-            options.headers['Content-Type'] = 'application/json';
+            options.headers = { 'Content-Type': 'application/json' };
             try {
                 const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        localStorage.removeItem('authToken');
-                        window.location.href = `${FRONTEND_URL}/login.html`;
-                        showNotification('Sessão expirada. Faça login novamente.', 'error');
-                        return null;
-                    }
-                    throw new Error(`Erro na API: ${response.status} - ${response.statusText}`);
-                }
+                if (!response.ok) throw new Error(`Erro: ${response.status}`);
                 return await response.json();
             } catch (error) {
-                console.error('Erro na requisição API:', error);
-                showNotification(`Erro na comunicação com o servidor: ${error.message}`, 'error');
+                console.error('Erro na API:', error);
+                showNotification(`Erro: ${error.message}`, 'error');
                 return null;
             }
         }
@@ -669,15 +691,12 @@
                     `;
                     tbody.appendChild(row);
                 });
-                lucide.createIcons(); // Atualiza ícones após adicionar novos elementos
+                lucide.createIcons();
             }
         }
 
         async function addClient(clientData) {
-            const response = await apiRequest('/clients', {
-                method: 'POST',
-                body: JSON.stringify(clientData)
-            });
+            const response = await apiRequest('/clients', { method: 'POST', body: JSON.stringify(clientData) });
             if (response) {
                 showNotification('Cliente adicionado com sucesso!', 'success');
                 loadClients();
@@ -686,10 +705,7 @@
         }
 
         async function updateClient(id, clientData) {
-            const response = await apiRequest(`/clients/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify(clientData)
-            });
+            const response = await apiRequest(`/clients/${id}`, { method: 'PUT', body: JSON.stringify(clientData) });
             if (response) {
                 showNotification('Cliente atualizado com sucesso!', 'success');
                 loadClients();
@@ -699,9 +715,7 @@
 
         async function deleteClient(id) {
             if (confirm('Tem certeza que deseja excluir este cliente?')) {
-                const response = await apiRequest(`/clients/${id}`, {
-                    method: 'DELETE'
-                });
+                const response = await apiRequest(`/clients/${id}`, { method: 'DELETE' });
                 if (response) {
                     showNotification('Cliente excluído com sucesso!', 'success');
                     loadClients();
@@ -712,29 +726,17 @@
         async function viewClient(id) {
             const response = await apiRequest(`/clients/${id}`);
             if (response) {
-                let details = `Nome: ${response.name}
-Telefone: ${response.phone}
-Email: ${response.email || 'N/A'}
-Status: ${response.status}
-`;
-                details += `Altura: ${response.height || 'N/A'}cm
-Peso: ${response.weight || 'N/A'}kg
-`;
-                details += `Doenças Preexistentes: ${response.diseases || 'Nenhuma'}
-Alergias: ${response.allergies || 'Nenhuma'}
-`;
-                details += `Observações Internas: ${response.notes || 'Nenhuma'}
-Último Agendamento: ${response.lastAppointment || 'N/A'}`;
-                alert('Detalhes do Cliente:
-' + details);
+                let details = `Nome: ${response.name}\nTelefone: ${response.phone}\nEmail: ${response.email || 'N/A'}\nStatus: ${response.status}\n`;
+                details += `Altura: ${response.height || 'N/A'}cm\nPeso: ${response.weight || 'N/A'}kg\n`;
+                details += `Doenças Preexistentes: ${response.diseases || 'Nenhuma'}\nAlergias: ${response.allergies || 'Nenhuma'}\n`;
+                details += `Observações Internas: ${response.notes || 'Nenhuma'}\nÚltimo Agendamento: ${response.lastAppointment || 'N/A'}`;
+                alert('Detalhes do Cliente:\n' + details);
             }
         }
 
         async function editClient(id) {
             const response = await apiRequest(`/clients/${id}`);
-            if (response) {
-                openModal('clientModal', response);
-            }
+            if (response) openModal('clientModal', response);
         }
 
         async function searchClients() {
@@ -772,7 +774,7 @@ Alergias: ${response.allergies || 'Nenhuma'}
                     `;
                     tbody.appendChild(row);
                 });
-                lucide.createIcons(); // Atualiza ícones após adicionar novos elementos
+                lucide.createIcons();
             }
         }
 
@@ -794,7 +796,7 @@ Alergias: ${response.allergies || 'Nenhuma'}
                         <td>${formattedDate}</td>
                         <td>${appointment.time}</td>
                         <td>${appointment.client.name || 'Cliente não encontrado'}</td>
-                        <td>${appointment.service}</td>
+                        <td>${appointment.service.name || appointment.service}</td>
                         <td><span class="${statusClass}">${appointment.status}</span></td>
                         <td>
                             <button class="btn-primary mr-2" onclick="editAppointment('${appointment._id}')"><i data-lucide="edit" class="w-4 h-4"></i></button>
@@ -803,15 +805,12 @@ Alergias: ${response.allergies || 'Nenhuma'}
                     `;
                     tbody.appendChild(row);
                 });
-                lucide.createIcons(); // Atualiza ícones após adicionar novos elementos
+                lucide.createIcons();
             }
         }
 
         async function addAppointment(appointmentData) {
-            const response = await apiRequest('/appointments', {
-                method: 'POST',
-                body: JSON.stringify(appointmentData)
-            });
+            const response = await apiRequest('/appointments', { method: 'POST', body: JSON.stringify(appointmentData) });
             if (response) {
                 showNotification('Agendamento adicionado com sucesso!', 'success');
                 loadAppointments();
@@ -821,10 +820,7 @@ Alergias: ${response.allergies || 'Nenhuma'}
         }
 
         async function updateAppointment(id, appointmentData) {
-            const response = await apiRequest(`/appointments/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify(appointmentData)
-            });
+            const response = await apiRequest(`/appointments/${id}`, { method: 'PUT', body: JSON.stringify(appointmentData) });
             if (response) {
                 showNotification('Agendamento atualizado com sucesso!', 'success');
                 loadAppointments();
@@ -835,9 +831,7 @@ Alergias: ${response.allergies || 'Nenhuma'}
 
         async function deleteAppointment(id) {
             if (confirm('Tem certeza que deseja excluir este agendamento?')) {
-                const response = await apiRequest(`/appointments/${id}`, {
-                    method: 'DELETE'
-                });
+                const response = await apiRequest(`/appointments/${id}`, { method: 'DELETE' });
                 if (response) {
                     showNotification('Agendamento excluído com sucesso!', 'success');
                     loadAppointments();
@@ -880,7 +874,7 @@ Alergias: ${response.allergies || 'Nenhuma'}
                         <td>${formattedDate}</td>
                         <td>${appointment.time}</td>
                         <td>${appointment.client.name || 'Cliente não encontrado'}</td>
-                        <td>${appointment.service}</td>
+                        <td>${appointment.service.name || appointment.service}</td>
                         <td><span class="${statusClass}">${appointment.status}</span></td>
                         <td>
                             <button class="btn-primary mr-2" onclick="editAppointment('${appointment._id}')"><i data-lucide="edit" class="w-4 h-4"></i></button>
@@ -889,7 +883,7 @@ Alergias: ${response.allergies || 'Nenhuma'}
                     `;
                     tbody.appendChild(row);
                 });
-                lucide.createIcons(); // Atualiza ícones após adicionar novos elementos
+                lucide.createIcons();
             }
         }
 
@@ -908,7 +902,7 @@ Alergias: ${response.allergies || 'Nenhuma'}
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td class="font-medium">${service.name}</td>
-                        <td>${service.description}</td>
+                        <td>${service.description || ''}</td>
                         <td>${service.duration}</td>
                         <td>R$ ${parseFloat(service.price).toFixed(2)}</td>
                         <td><span class="${statusClass}">${service.status}</span></td>
@@ -919,15 +913,12 @@ Alergias: ${response.allergies || 'Nenhuma'}
                     `;
                     tbody.appendChild(row);
                 });
-                lucide.createIcons(); // Atualiza ícones após adicionar novos elementos
+                lucide.createIcons();
             }
         }
 
         async function addService(serviceData) {
-            const response = await apiRequest('/services', {
-                method: 'POST',
-                body: JSON.stringify(serviceData)
-            });
+            const response = await apiRequest('/services', { method: 'POST', body: JSON.stringify(serviceData) });
             if (response) {
                 showNotification('Serviço adicionado com sucesso!', 'success');
                 loadServices();
@@ -936,10 +927,7 @@ Alergias: ${response.allergies || 'Nenhuma'}
         }
 
         async function updateService(id, serviceData) {
-            const response = await apiRequest(`/services/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify(serviceData)
-            });
+            const response = await apiRequest(`/services/${id}`, { method: 'PUT', body: JSON.stringify(serviceData) });
             if (response) {
                 showNotification('Serviço atualizado com sucesso!', 'success');
                 loadServices();
@@ -949,9 +937,7 @@ Alergias: ${response.allergies || 'Nenhuma'}
 
         async function deleteService(id) {
             if (confirm('Tem certeza que deseja excluir este serviço?')) {
-                const response = await apiRequest(`/services/${id}`, {
-                    method: 'DELETE'
-                });
+                const response = await apiRequest(`/services/${id}`, { method: 'DELETE' });
                 if (response) {
                     showNotification('Serviço excluído com sucesso!', 'success');
                     loadServices();
@@ -961,9 +947,7 @@ Alergias: ${response.allergies || 'Nenhuma'}
 
         async function editService(id) {
             const response = await apiRequest(`/services/${id}`);
-            if (response) {
-                openModal('serviceModal', response);
-            }
+            if (response) openModal('serviceModal', response);
         }
 
         // --- FUNÇÕES DE PREENCHIMENTO DE SELECTS ---
@@ -1014,10 +998,8 @@ Alergias: ${response.allergies || 'Nenhuma'}
                     const apptDate = new Date(a.date);
                     return apptDate >= startOfMonth && apptDate <= endOfMonth && a.status === 'Realizado';
                 });
-                // Simulação de cálculo de receita
-                let monthlyRevenue = monthlyAppointments.length * 300.00;
+                let monthlyRevenue = monthlyAppointments.reduce((sum, appt) => sum + (appt.service?.price || 300), 0);
                 document.getElementById('monthlyRevenue').textContent = `R$ ${monthlyRevenue.toFixed(2)}`;
-
                 const sortedAppointments = appointmentsRes.sort((a, b) => new Date(a.date) - new Date(b.date));
                 const upcomingAppointments = sortedAppointments.filter(a => new Date(a.date) >= new Date()).slice(0, 5);
                 const upcomingList = document.getElementById('upcomingAppointmentsList');
@@ -1029,11 +1011,10 @@ Alergias: ${response.allergies || 'Nenhuma'}
                         const formattedDate = new Date(appt.date).toLocaleDateString('pt-BR');
                         const apptDiv = document.createElement('div');
                         apptDiv.className = 'p-3 border-b border-gray-600';
-                        apptDiv.innerHTML = `<p class="text-sm"><strong class="text-yellow-400">${formattedDate} ${appt.time}</strong> - ${appt.client.name || 'Cliente não encontrado'} - ${appt.service} <span class="status-${appt.status.toLowerCase().replace(' ', '-')}">(${appt.status})</span></p>`;
+                        apptDiv.innerHTML = `<p class="text-sm"><strong class="text-yellow-400">${formattedDate} ${appt.time}</strong> - ${appt.client.name || 'Cliente não encontrado'} - ${appt.service.name || appt.service} <span class="status-${appt.status.toLowerCase().replace(' ', '-')}">(${appt.status})</span></p>`;
                         upcomingList.appendChild(apptDiv);
                     });
                 }
-
                 const recentClients = clientsRes.sort((a, b) => new Date(b.createdAt || b._id) - new Date(a.createdAt || a._id)).slice(0, 5);
                 const recentList = document.getElementById('recentClientsList');
                 recentList.innerHTML = '';
@@ -1048,6 +1029,127 @@ Alergias: ${response.allergies || 'Nenhuma'}
                     });
                 }
             }
+        }
+
+        // --- FUNÇÕES DE RELATÓRIOS ---
+        async function loadReports() {
+            const period = document.getElementById('reportPeriod').value;
+            let endpoint = '';
+            
+            if (period === 'daily') {
+                const date = document.getElementById('reportDate').value || new Date().toISOString().split('T')[0];
+                endpoint = `/reports/daily?date=${date}`;
+            } else if (period === 'weekly') {
+                endpoint = '/reports/weekly';
+            } else if (period === 'monthly') {
+                const monthInput = document.getElementById('reportMonth').value;
+                if (monthInput) {
+                    const [year, month] = monthInput.split('-');
+                    endpoint = `/reports/monthly?year=${year}&month=${parseInt(month)}`;
+                } else {
+                    endpoint = '/reports/monthly';
+                }
+            }
+
+            const data = await apiRequest(endpoint);
+            if (data) {
+                document.getElementById('reportAppointments').textContent = data.appointments || 0;
+                document.getElementById('reportRevenue').textContent = data.revenueFormatted || `R$ ${data.revenue?.toFixed(2) || '0,00'}`;
+                document.getElementById('reportNewClients').textContent = data.newClients || 0;
+                document.getElementById('reportDetails').innerHTML = `
+                    <p><strong>Período:</strong> ${data.date || data.weekStart || `${data.month}/${data.year}`}</p>
+                    <p><strong>Agendamentos realizados:</strong> ${data.appointments || 0}</p>
+                    <p><strong>Receita total:</strong> ${data.revenueFormatted || `R$ ${data.revenue?.toFixed(2) || '0,00'}`}</p>
+                    <p><strong>Novos clientes:</strong> ${data.newClients || 0}</p>
+                `;
+            }
+        }
+
+        function exportReportToCSV() {
+            const data = {
+                period: document.getElementById('reportPeriod').value,
+                appointments: document.getElementById('reportAppointments').textContent,
+                revenue: document.getElementById('reportRevenue').textContent,
+                newClients: document.getElementById('reportNewClients').textContent
+            };
+            const csv = `Período,Agendamentos,Receita,Novos Clientes\n${Object.values(data).join(',')}`;
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `relatorio-${data.period}.csv`;
+            a.click();
+        }
+
+        // Atualiza filtros quando muda o período
+        document.getElementById('reportPeriod').addEventListener('change', function() {
+            const period = this.value;
+            document.getElementById('dateFilter').classList.toggle('hidden', period !== 'daily');
+            document.getElementById('monthFilter').classList.toggle('hidden', period !== 'monthly');
+        });
+
+        // Inicializa datas
+        document.getElementById('reportDate').valueAsDate = new Date();
+        document.getElementById('reportMonth').value = new Date().toISOString().slice(0, 7);
+
+        // --- GRÁFICOS ---
+        let revenueChart = null;
+        let newClientsChart = null;
+
+        async function loadCharts() {
+            // Simulação de dados mensais (em produção, viria da API)
+            const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+            const revenueData = Array(12).fill(0).map((_, i) => Math.floor(Math.random() * 5000) + 1000);
+            const clientsData = Array(12).fill(0).map((_, i) => Math.floor(Math.random() * 20) + 5);
+
+            const ctx1 = document.getElementById('revenueChart').getContext('2d');
+            if (revenueChart) revenueChart.destroy();
+            revenueChart = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Receita (R$)',
+                        data: revenueData,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            const ctx2 = document.getElementById('newClientsChart').getContext('2d');
+            if (newClientsChart) newClientsChart.destroy();
+            newClientsChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Novos Clientes',
+                        data: clientsData,
+                        backgroundColor: '#8b5cf6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 5 } }
+                    }
+                }
+            });
         }
 
         // --- EVENT LISTENERS PARA FORMS ---
@@ -1109,16 +1211,13 @@ Alergias: ${response.allergies || 'Nenhuma'}
 
         // --- INICIALIZAÇÃO ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Se não estiver autenticado, redireciona (opcional, pode ser removido se não tiver login)
-            // if (!isAuthenticated()) {
-            //     window.location.href = FRONTEND_URL;
-            //     return;
-            // }
-            // Carrega a seção inicial
+            // Atualize estas URLs com seus links reais do Render e Netlify
+            // const API_BASE_URL = 'https://SEU-BACKEND.onrender.com/api/';
+            // const FRONTEND_URL = 'https://SEU-FRONTEND.netlify.app/';
+            
             showSection('dashboard-section');
+            loadCharts();
         });
     </script>
 </body>
 </html>
-
-
