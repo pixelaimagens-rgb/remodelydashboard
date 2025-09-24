@@ -388,7 +388,7 @@
                     </div>
                     <div>
                         <label class="block text-gray-300 text-sm font-medium mb-2">Alergias</label>
-                            <input type="text" id="clientAllergies" class="input-field">
+                        <input type="text" id="clientAllergies" class="input-field">
                     </div>
                     <div>
                         <label class="block text-gray-300 text-sm font-medium mb-2">Observações</label>
@@ -535,9 +535,8 @@
             // Mostra a seção selecionada
             document.getElementById(sectionId).classList.remove('hidden');
             // Adiciona a classe 'active' ao link clicado
-            // O 'event' pode ser undefined em chamadas diretas, então verificamos
             if (event && event.target) {
-                 event.target.classList.add('active');
+                event.target.classList.add('active');
             }
             // Carrega dados específicos da seção
             if (sectionId === 'dashboard-section') {
@@ -688,4 +687,436 @@
 
         async function updateClient(id, clientData) {
             const response = await apiRequest(`/clients/${id}`, {
-          
+                method: 'PUT',
+                body: JSON.stringify(clientData)
+            });
+            if (response) {
+                showNotification('Cliente atualizado com sucesso!', 'success');
+                loadClients();
+                closeModal('clientModal');
+            }
+        }
+
+        async function deleteClient(id) {
+            if (confirm('Tem certeza que deseja excluir este cliente?')) {
+                const response = await apiRequest(`/clients/${id}`, {
+                    method: 'DELETE'
+                });
+                if (response) {
+                    showNotification('Cliente excluído com sucesso!', 'success');
+                    loadClients();
+                }
+            }
+        }
+
+        async function viewClient(id) {
+            const response = await apiRequest(`/clients/${id}`);
+            if (response) {
+                let details = `Nome: ${response.name}
+Telefone: ${response.phone}
+Email: ${response.email || 'N/A'}
+Status: ${response.status}
+`;
+                details += `Altura: ${response.height || 'N/A'}cm
+Peso: ${response.weight || 'N/A'}kg
+`;
+                details += `Doenças Preexistentes: ${response.diseases || 'Nenhuma'}
+Alergias: ${response.allergies || 'Nenhuma'}
+`;
+                details += `Observações Internas: ${response.notes || 'Nenhuma'}
+Último Agendamento: ${response.lastAppointment || 'N/A'}`;
+                alert('Detalhes do Cliente:
+' + details);
+            }
+        }
+
+        async function editClient(id) {
+            const response = await apiRequest(`/clients/${id}`);
+            if (response) {
+                openModal('clientModal', response);
+            }
+        }
+
+        async function searchClients() {
+            const searchTerm = document.getElementById('searchClients').value.toLowerCase();
+            if (!searchTerm) {
+                loadClients();
+                return;
+            }
+            const allClients = await apiRequest('/clients');
+            if (allClients) {
+                const filteredClients = allClients.filter(client =>
+                    client.name.toLowerCase().includes(searchTerm) ||
+                    client.phone.includes(searchTerm) ||
+                    (client.email && client.email.toLowerCase().includes(searchTerm))
+                );
+                const tbody = document.getElementById('clientsTableBody');
+                tbody.innerHTML = '';
+                if (filteredClients.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400">Nenhum cliente encontrado para a busca.</td></tr>';
+                    return;
+                }
+                filteredClients.forEach(client => {
+                    const row = document.createElement('tr');
+                    const statusClass = `status-${client.status.toLowerCase().replace(' ', '-')}`;
+                    row.innerHTML = `
+                        <td class="font-medium">${client.name}</td>
+                        <td>${client.phone}</td>
+                        <td>${client.email || 'N/A'}</td>
+                        <td><span class="${statusClass}">${client.status}</span></td>
+                        <td>
+                            <button class="btn-primary mr-2" onclick="viewClient('${client._id}')"><i data-lucide="eye" class="w-4 h-4"></i></button>
+                            <button class="btn-primary mr-2" onclick="editClient('${client._id}')"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                            <button class="btn-danger" onclick="deleteClient('${client._id}')"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                lucide.createIcons(); // Atualiza ícones após adicionar novos elementos
+            }
+        }
+
+        // --- FUNÇÕES DE AGENDAMENTOS ---
+        async function loadAppointments() {
+            const response = await apiRequest('/appointments');
+            if (response) {
+                const tbody = document.getElementById('appointmentsTableBody');
+                tbody.innerHTML = '';
+                if (response.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-400">Nenhum agendamento encontrado.</td></tr>';
+                    return;
+                }
+                response.forEach(appointment => {
+                    const statusClass = `status-${appointment.status.toLowerCase().replace(' ', '-')}`;
+                    const formattedDate = new Date(appointment.date).toLocaleDateString('pt-BR');
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${formattedDate}</td>
+                        <td>${appointment.time}</td>
+                        <td>${appointment.client.name || 'Cliente não encontrado'}</td>
+                        <td>${appointment.service}</td>
+                        <td><span class="${statusClass}">${appointment.status}</span></td>
+                        <td>
+                            <button class="btn-primary mr-2" onclick="editAppointment('${appointment._id}')"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                            <button class="btn-danger" onclick="deleteAppointment('${appointment._id}')"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                lucide.createIcons(); // Atualiza ícones após adicionar novos elementos
+            }
+        }
+
+        async function addAppointment(appointmentData) {
+            const response = await apiRequest('/appointments', {
+                method: 'POST',
+                body: JSON.stringify(appointmentData)
+            });
+            if (response) {
+                showNotification('Agendamento adicionado com sucesso!', 'success');
+                loadAppointments();
+                loadDashboardData();
+                closeModal('appointmentModal');
+            }
+        }
+
+        async function updateAppointment(id, appointmentData) {
+            const response = await apiRequest(`/appointments/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(appointmentData)
+            });
+            if (response) {
+                showNotification('Agendamento atualizado com sucesso!', 'success');
+                loadAppointments();
+                loadDashboardData();
+                closeModal('appointmentModal');
+            }
+        }
+
+        async function deleteAppointment(id) {
+            if (confirm('Tem certeza que deseja excluir este agendamento?')) {
+                const response = await apiRequest(`/appointments/${id}`, {
+                    method: 'DELETE'
+                });
+                if (response) {
+                    showNotification('Agendamento excluído com sucesso!', 'success');
+                    loadAppointments();
+                    loadDashboardData();
+                }
+            }
+        }
+
+        async function editAppointment(id) {
+            const response = await apiRequest(`/appointments/${id}`);
+            if (response) {
+                await loadClientsForSelect();
+                await loadServicesForSelect();
+                openModal('appointmentModal', response);
+            }
+        }
+
+        async function filterAppointments() {
+            const filterDate = document.getElementById('filterDate').value;
+            if (!filterDate) {
+                loadAppointments();
+                return;
+            }
+            const allAppointments = await apiRequest('/appointments');
+            if (allAppointments) {
+                const filteredAppointments = allAppointments.filter(appointment =>
+                    new Date(appointment.date).toISOString().split('T')[0] === filterDate
+                );
+                const tbody = document.getElementById('appointmentsTableBody');
+                tbody.innerHTML = '';
+                if (filteredAppointments.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-400">Nenhum agendamento encontrado para a data selecionada.</td></tr>';
+                    return;
+                }
+                filteredAppointments.forEach(appointment => {
+                    const statusClass = `status-${appointment.status.toLowerCase().replace(' ', '-')}`;
+                    const formattedDate = new Date(appointment.date).toLocaleDateString('pt-BR');
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${formattedDate}</td>
+                        <td>${appointment.time}</td>
+                        <td>${appointment.client.name || 'Cliente não encontrado'}</td>
+                        <td>${appointment.service}</td>
+                        <td><span class="${statusClass}">${appointment.status}</span></td>
+                        <td>
+                            <button class="btn-primary mr-2" onclick="editAppointment('${appointment._id}')"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                            <button class="btn-danger" onclick="deleteAppointment('${appointment._id}')"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                lucide.createIcons(); // Atualiza ícones após adicionar novos elementos
+            }
+        }
+
+        // --- FUNÇÕES DE SERVIÇOS ---
+        async function loadServices() {
+            const response = await apiRequest('/services');
+            if (response) {
+                const tbody = document.getElementById('servicesTableBody');
+                tbody.innerHTML = '';
+                if (response.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-400">Nenhum serviço encontrado.</td></tr>';
+                    return;
+                }
+                response.forEach(service => {
+                    const statusClass = `status-${service.status.toLowerCase().replace(' ', '-')}`;
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="font-medium">${service.name}</td>
+                        <td>${service.description}</td>
+                        <td>${service.duration}</td>
+                        <td>R$ ${parseFloat(service.price).toFixed(2)}</td>
+                        <td><span class="${statusClass}">${service.status}</span></td>
+                        <td>
+                            <button class="btn-primary mr-2" onclick="editService('${service._id}')"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                            <button class="btn-danger" onclick="deleteService('${service._id}')"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                lucide.createIcons(); // Atualiza ícones após adicionar novos elementos
+            }
+        }
+
+        async function addService(serviceData) {
+            const response = await apiRequest('/services', {
+                method: 'POST',
+                body: JSON.stringify(serviceData)
+            });
+            if (response) {
+                showNotification('Serviço adicionado com sucesso!', 'success');
+                loadServices();
+                closeModal('serviceModal');
+            }
+        }
+
+        async function updateService(id, serviceData) {
+            const response = await apiRequest(`/services/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify(serviceData)
+            });
+            if (response) {
+                showNotification('Serviço atualizado com sucesso!', 'success');
+                loadServices();
+                closeModal('serviceModal');
+            }
+        }
+
+        async function deleteService(id) {
+            if (confirm('Tem certeza que deseja excluir este serviço?')) {
+                const response = await apiRequest(`/services/${id}`, {
+                    method: 'DELETE'
+                });
+                if (response) {
+                    showNotification('Serviço excluído com sucesso!', 'success');
+                    loadServices();
+                }
+            }
+        }
+
+        async function editService(id) {
+            const response = await apiRequest(`/services/${id}`);
+            if (response) {
+                openModal('serviceModal', response);
+            }
+        }
+
+        // --- FUNÇÕES DE PREENCHIMENTO DE SELECTS ---
+        async function loadClientsForSelect() {
+            const response = await apiRequest('/clients');
+            if (response) {
+                const select = document.getElementById('appointmentClient');
+                select.innerHTML = '';
+                response.forEach(client => {
+                    const option = document.createElement('option');
+                    option.value = client._id;
+                    option.textContent = client.name;
+                    select.appendChild(option);
+                });
+            }
+        }
+
+        async function loadServicesForSelect() {
+            const response = await apiRequest('/services');
+            if (response) {
+                const select = document.getElementById('appointmentService');
+                select.innerHTML = '';
+                response.forEach(service => {
+                    const option = document.createElement('option');
+                    option.value = service._id;
+                    option.textContent = service.name;
+                    select.appendChild(option);
+                });
+            }
+        }
+
+        // --- FUNÇÕES DO DASHBOARD ---
+        async function loadDashboardData() {
+            const [clientsRes, appointmentsRes] = await Promise.all([
+                apiRequest('/clients'),
+                apiRequest('/appointments')
+            ]);
+            if (clientsRes && appointmentsRes) {
+                document.getElementById('totalClientsCount').textContent = clientsRes.length;
+                const activeClients = clientsRes.filter(c => c.status === 'Ativo').length;
+                document.getElementById('activeClientsCount').textContent = activeClients;
+                const today = new Date().toISOString().split('T')[0];
+                const todaysAppointments = appointmentsRes.filter(a => new Date(a.date).toISOString().split('T')[0] === today).length;
+                document.getElementById('todaysAppointmentsCount').textContent = todaysAppointments;
+                const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+                const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+                const monthlyAppointments = appointmentsRes.filter(a => {
+                    const apptDate = new Date(a.date);
+                    return apptDate >= startOfMonth && apptDate <= endOfMonth && a.status === 'Realizado';
+                });
+                // Simulação de cálculo de receita
+                let monthlyRevenue = monthlyAppointments.length * 300.00;
+                document.getElementById('monthlyRevenue').textContent = `R$ ${monthlyRevenue.toFixed(2)}`;
+
+                const sortedAppointments = appointmentsRes.sort((a, b) => new Date(a.date) - new Date(b.date));
+                const upcomingAppointments = sortedAppointments.filter(a => new Date(a.date) >= new Date()).slice(0, 5);
+                const upcomingList = document.getElementById('upcomingAppointmentsList');
+                upcomingList.innerHTML = '';
+                if (upcomingAppointments.length === 0) {
+                    upcomingList.innerHTML = '<p class="text-gray-400">Nenhum agendamento futuro encontrado.</p>';
+                } else {
+                    upcomingAppointments.forEach(appt => {
+                        const formattedDate = new Date(appt.date).toLocaleDateString('pt-BR');
+                        const apptDiv = document.createElement('div');
+                        apptDiv.className = 'p-3 border-b border-gray-600';
+                        apptDiv.innerHTML = `<p class="text-sm"><strong class="text-yellow-400">${formattedDate} ${appt.time}</strong> - ${appt.client.name || 'Cliente não encontrado'} - ${appt.service} <span class="status-${appt.status.toLowerCase().replace(' ', '-')}">(${appt.status})</span></p>`;
+                        upcomingList.appendChild(apptDiv);
+                    });
+                }
+
+                const recentClients = clientsRes.sort((a, b) => new Date(b.createdAt || b._id) - new Date(a.createdAt || a._id)).slice(0, 5);
+                const recentList = document.getElementById('recentClientsList');
+                recentList.innerHTML = '';
+                if (recentClients.length === 0) {
+                    recentList.innerHTML = '<p class="text-gray-400">Nenhum cliente encontrado.</p>';
+                } else {
+                    recentClients.forEach(client => {
+                        const clientDiv = document.createElement('div');
+                        clientDiv.className = 'p-3 border-b border-gray-600';
+                        clientDiv.innerHTML = `<p class="text-sm"><strong class="text-yellow-400">${client.name}</strong> - ${client.phone} <span class="status-${client.status.toLowerCase().replace(' ', '-')}">(${client.status})</span></p>`;
+                        recentList.appendChild(clientDiv);
+                    });
+                }
+            }
+        }
+
+        // --- EVENT LISTENERS PARA FORMS ---
+        document.getElementById('clientForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('clientId').value;
+            const clientData = {
+                name: document.getElementById('clientName').value,
+                phone: document.getElementById('clientPhone').value,
+                email: document.getElementById('clientEmail').value,
+                status: document.getElementById('clientStatus').value,
+                height: document.getElementById('clientHeight').value ? parseInt(document.getElementById('clientHeight').value) : undefined,
+                weight: document.getElementById('clientWeight').value ? parseFloat(document.getElementById('clientWeight').value) : undefined,
+                diseases: document.getElementById('clientDiseases').value,
+                allergies: document.getElementById('clientAllergies').value,
+                notes: document.getElementById('clientNotes').value
+            };
+            if (id) {
+                await updateClient(id, clientData);
+            } else {
+                await addClient(clientData);
+            }
+        });
+
+        document.getElementById('appointmentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('appointmentId').value;
+            const appointmentData = {
+                client: document.getElementById('appointmentClient').value,
+                service: document.getElementById('appointmentService').value,
+                date: document.getElementById('appointmentDate').value,
+                time: document.getElementById('appointmentTime').value,
+                status: document.getElementById('appointmentStatus').value,
+                notes: document.getElementById('appointmentNotes').value
+            };
+            if (id) {
+                await updateAppointment(id, appointmentData);
+            } else {
+                await addAppointment(appointmentData);
+            }
+        });
+
+        document.getElementById('serviceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('serviceId').value;
+            const serviceData = {
+                name: document.getElementById('serviceName').value,
+                description: document.getElementById('serviceDescription').value,
+                duration: parseInt(document.getElementById('serviceDuration').value),
+                price: parseFloat(document.getElementById('servicePrice').value),
+                status: document.getElementById('serviceStatus').value
+            };
+            if (id) {
+                await updateService(id, serviceData);
+            } else {
+                await addService(serviceData);
+            }
+        });
+
+        // --- INICIALIZAÇÃO ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Se não estiver autenticado, redireciona (opcional, pode ser removido se não tiver login)
+            // if (!isAuthenticated()) {
+            //     window.location.href = FRONTEND_URL;
+            //     return;
+            // }
+            // Carrega a seção inicial
+            showSection('dashboard-section');
+        });
+    </script>
+</body>
+</html>
