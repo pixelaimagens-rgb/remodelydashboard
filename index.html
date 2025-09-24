@@ -523,34 +523,34 @@
         }
 
         // --- FUNÇÕES DE NAVEGAÇÃO ---
-        function showSection(sectionId) {
-            // Esconde todas as seções
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.classList.add('hidden');
-            });
-            // Remove a classe 'active' de todos os links
-            document.querySelectorAll('.sidebar a').forEach(link => {
-                link.classList.remove('active');
-            });
-            // Mostra a seção selecionada
-            document.getElementById(sectionId).classList.remove('hidden');
-            // Adiciona a classe 'active' ao link clicado
-            if (event && event.target) {
-                 event.target.classList.add('active');
-            }
-            // Carrega dados específicos da seção
-            if (sectionId === 'dashboard-section') {
-                loadDashboardData();
-            } else if (sectionId === 'clientes-section') {
-                loadClients();
-            } else if (sectionId === 'agendamentos-section') {
-                loadAppointments();
-                loadClientsForSelect();
-                loadServicesForSelect();
-            } else if (sectionId === 'servicos-section') {
-                loadServices();
-            }
-        }
+        function showSection(sectionId, evt = null) {
+    // Esconde todas as seções
+    document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.add('hidden');
+    });
+    // Remove a classe 'active' de todos os links
+    document.querySelectorAll('.sidebar a').forEach(link => {
+        link.classList.remove('active');
+    });
+    // Mostra a seção selecionada
+    document.getElementById(sectionId).classList.remove('hidden');
+    // Adiciona a classe 'active' ao link clicado, se o evento for fornecido
+    if (evt && evt.target) {
+        evt.target.classList.add('active');
+    }
+    // Carrega dados específicos da seção
+    if (sectionId === 'dashboard-section') {
+        loadDashboardData();
+    } else if (sectionId === 'clientes-section') {
+        loadClients();
+    } else if (sectionId === 'agendamentos-section') {
+        loadAppointments();
+        loadClientsForSelect();
+        loadServicesForSelect();
+    } else if (sectionId === 'servicos-section') {
+        loadServices();
+    }
+}
 
         // --- FUNÇÕES DE MODAL ---
         function openModal(modalId, data = null) {
@@ -1120,4 +1120,5 @@ Alergias: ${response.allergies || 'Nenhuma'}
     </script>
 </body>
 </html>
+
 
